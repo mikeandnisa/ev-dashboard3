@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCI Dashboard</title>
+    
+    <script src="https://cjrtnc.leaningtech.com/4.3/loader.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #loading-message {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-message">
+        <h2>⚡ Loading SDG EV Dashboard System...</h2>
+        <p style="color: gray;">This may take a moment to initialize the virtual interface.</p>
+    </div>
+
+    <script>
+        (async () => {
+            // 1. Start the runtime engine
+            await cheerpjInit();
+            
+            // Hide the placeholder text when ready
+            document.getElementById('loading-message').style.display = 'none';
+
+            // 2. Build the app display canvas
+            cheerpjCreateDisplay(1000, 750);
+            
+            // 3. CRUCIAL FIX: Directs CheerpJ into your exact GitHub repository subfolder path
+            await cheerpjRunMain("InteractiveDashboard3", "/app/ev-dashboard2/InteractiveDashboard3.jar");
+        })();
+    </script>
+
+</body>
+</html>
