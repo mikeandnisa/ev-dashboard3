@@ -3,110 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCI Dashboard - Diagnostics</title>
+    <title>HCI Dashboard</title>
     
     <script src="https://cjrtnc.leaningtech.com/4.3/loader.js"></script>
 
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            background-color: #1a1a1a;
+            padding: 0;
+            background-color: #1a1a1a; 
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
+            height: 100vh;
             font-family: Arial, sans-serif;
             color: white;
-            box-sizing: border-box;
         }
-        #loading-area {
+        #loading-message {
             text-align: center;
-            margin-top: 50px;
-            margin-bottom: 30px;
-        }
-        #console-container {
-            width: 100%;
-            max-width: 900px;
-            background: #000;
-            border: 1px solid #333;
-            border-radius: 6px;
-            padding: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
-        #debug-log {
-            max-height: 300px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
+            position: absolute;
+            z-index: 999;
         }
     </style>
-
-    <script>
-        // Directly intercept console logs to display them on-screen
-        function appendToScreenLog(type, args) {
-            const logWindow = document.getElementById('debug-log');
-            if (!logWindow) return;
-            const message = Array.from(args).map(arg => {
-                if (typeof arg === 'object') {
-                    try { return JSON.stringify(arg); } catch(e) { return String(arg); }
-                }
-                return String(arg);
-            }).join(' ');
-            
-            let color = '#aaa';
-            if (type === 'ERROR') color = '#ff4a4a';
-            if (type === 'WARN') color = '#ffcc00';
-            if (type === 'SYSTEM') color = '#4aff4a';
-
-            logWindow.innerHTML += `<div style="color: ${color}; font-family: monospace; font-size: 13px; margin-bottom: 5px; text-align: left;">[${type}] ${message}</div>`;
-            logWindow.scrollTop = logWindow.scrollHeight;
-        }
-
-        const _log = console.log; console.log = function() { appendToScreenLog('LOG', arguments); _log.apply(console, arguments); };
-        const _err = console.error; console.error = function() { appendToScreenLog('ERROR', arguments); _err.apply(console, arguments); };
-        const _warn = console.warn; console.warn = function() { appendToScreenLog('WARN', arguments); _warn.apply(console, arguments); };
-        window.addEventListener('error', (e) => appendToScreenLog('UNCAUGHT', [e.message]));
-        window.addEventListener('unhandledrejection', (e) => appendToScreenLog('PROMISE-FAIL', [e.reason]));
-    </script>
 </head>
 <body>
 
-    <div id="loading-area">
-        <h2>⚡ Launching Java Environment...</h2>
-        <p style="color: gray;">If the loader spins indefinitely, check the diagnostic log below.</p>
-    </div>
-
-    <div id="console-container">
-        <div style="border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 10px; font-weight: bold; font-size: 14px; color: #4aff4a;">
-            📋 Live Application Diagnostic Log
-        </div>
-        <div id="debug-log">
-            <div style="color: #666; font-family: monospace; font-size: 13px;">Waiting for runtime engines to report status...</div>
-        </div>
+    <div id="loading-message">
+        <h2>⚡ Initializing SDG EV Dashboard...</h2>
+        <p style="color: gray;">Loading Java 17 WebAssembly runtime environments. Please wait a moment.</p>
     </div>
 
     <script>
         (async () => {
-            try {
-                appendToScreenLog('SYSTEM', ['Initializing CheerpJ...']);
-                await cheerpjInit();
-                appendToScreenLog('SYSTEM', ['CheerpJ engine ready. Compiling interface window...']);
-                
-                cheerpjCreateDisplay(1000, 750);
-                
-                const currentPath = window.location.pathname;
-                const formattedPath = currentPath.endsWith('/') ? currentPath : currentPath + '/';
-                const finalJarPath = `/app${formattedPath}InteractiveDashboard3.jar`;
-                
-                appendToScreenLog('SYSTEM', [`Target JAR path generated: ${finalJarPath}`]);
-                appendToScreenLog('SYSTEM', ['Executing main method...']);
-                
-                await cheerpjRunMain("InteractiveDashboard3", finalJarPath);
-            } catch (err) {
-                appendToScreenLog('ERROR', ['Failed during execution sequence:', err]);
-            }
+            // FIX: Forces CheerpJ to run in Java 17 mode instead of defaulting to Java 8
+            await cheerpjInit({version: 17});
+            
+            // Hide the placeholder text when the engine takes over
+            document.getElementById('loading-message').style.display = 'none';
+
+            // Build the application display canvas
+            cheerpjCreateDisplay(1000, 750);
+            
+            // Automatically detects your repository path seamlessly
+            const currentPath = window.location.pathname;
+            const formattedPath = currentPath.endsWith('/') ? currentPath : currentPath + '/';
+            
+            await cheerpjRunMain("InteractiveDashboard3", `/app${formattedPath}InteractiveDashboard3.jar`);
         })();
     </script>
 
